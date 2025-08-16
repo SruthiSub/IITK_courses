@@ -1,0 +1,71 @@
+Q=1000;
+N=1000;
+t0=-1;
+t1=1;
+h=(t1-t0)/(Q+1);
+s0=0.3;
+a=1/(exp(1)+exp(-1));
+b=1/(exp(1)+exp(-1));
+s=zeros(1,N+1);
+Y=zeros(1,N);
+Yexac=zeros(1,N);
+T=zeros(1,N);
+yexac= @(t) 1/(exp(t)+exp(-t)) ;
+s(1,1)=s0;
+for n=1:N
+    T(n)=t0+h*n;
+    Yexac(n)=yexac(T(n));
+end
+for n=1:N
+    S=s(1,n);
+    f1 = @(t,y1,y2) y2;
+    f2 = @(t,y1,y2) -y1+2*y2*y2/y1;
+    z=[0;1];
+    y0=[a;s(1,n)];
+    u=y0;
+    for k=1:Q
+        %RK4 implementation
+        t=t0+k*h;
+        l1=f1(t,u(1),u(2));
+        k1=f2(t,u(1),u(2));
+        q1=u(1)+h*l1/2;
+        p1=u(2)+h*k1/2;
+        l2=f1(t+h/2,q1,p1);
+        k2=f2(t+h/2,q1,p1);
+        q2=u(1)+h*l2/2;
+        p2=u(2)+h*k2/2;
+        l3=f1(t+h/2,q2,p2);
+        k3=f2(t+h/2,q2,p2);
+        q3=u(1)+h*l3;
+        p3=u(2)+h*k3;
+        l4=f1(t+h,q3,p3);
+        k4=f2(t+h,q3,p3);
+        u1=u(1)+h*(l1/6+l2/3+l3/3+l4/6);
+        u2=u(2)+h*(k1/6+k2/3+k3/3+k4/6);
+        u=[u1 ; u2];
+        f3 = @(t,z1,z2) z2;
+    f4 = @(t,z1,z2) z1*(-1-2*u2*u2/(u1*u1))+z2*4*u2/u1;
+        l1=f3(t,u(1),u(2));
+        k1=f4(t,u(1),u(2));
+        q1=z(1)+h*l1/2;
+        p1=z(2)+h*k1/2;
+        l2=f3(t+h/2,q1,p1);
+        k2=f4(t+h/2,q1,p1);
+        q2=z(1)+h*l2/2;
+        p2=z(2)+h*k2/2;
+        l3=f3(t+h/2,q2,p2);
+        k3=f4(t+h/2,q2,p2);
+        q3=z(1)+h*l3;
+        p3=z(2)+h*k3;
+        l4=f3(t+h,q3,p3);
+        k4=f4(t+h,q3,p3);
+        z1=z(1)+h*(l1/6+l2/3+l3/3+l4/6);
+        z2=z(2)+h*(k1/6+k2/3+k3/3+k4/6);
+        z=[z1;z2];
+        Y(1,k)=u1;
+    end
+    Snew=S-(u1-b)/z1;
+    s(1,n+1)=Snew;
+end
+plot(T,Yexac,T,Y);
+Y
